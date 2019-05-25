@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[23]:
+# In[22]:
 
 
 from __future__ import print_function
@@ -67,6 +67,12 @@ data.fillna(data.mean(), inplace = True)
 data.loc[data.diagnosis == 1, 'diagnosis'] = 0
 data.loc[data.diagnosis  > 1, 'diagnosis'] = 1
 
+print ('\nBanco com %d amostras e %d colunas\n' % data.shape)
+#data.target.shape
+
+print ("Tabela sumarizando as colunas do banco\n")
+print (data.describe())
+
 X = data.loc[:, data.columns != 'diagnosis']
 y = data['diagnosis']
 
@@ -81,28 +87,30 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
 
 best_score = float('-inf')
 
-
+"""
 file_rf = open("Tuning_rf_acc.csv","w")
 
-#plot_3d = []
+plot_3d = []
 print("Testing Random Forests")
-for max_depth in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10): 
-	for max_features in [2, 4, 6, 8, 10, 15, 25, 50, "auto"]:
-		print(max_depth, max_features, end= ' ')
-		clf = RF(max_depth = max_depth, max_features = max_features).fit(X_train, y_train)
-		score_tr, score_te = printAccuracy(clf, X_train, X_test)
-		if score_te > best_score:
-			best_score = score_te
-			best_rf = clone(clf)
+for max_depth in (1, 2, 3, 4, 5): 
+	for n_estimators in [10, 25, 50, 100, 200]:
+		for max_features in [2, 4, 6, 8, 10, 15, 25, 50, "auto"]:
+			for min_samples_split in [2, 4, 8, 16, 32]:
+				print(max_depth, n_estimators, max_features, min_samples_split, end= ' ')
+				clf = RF(max_depth = max_depth, n_estimators = n_estimators, max_features = max_features, min_samples_split = min_samples_split).fit(X_train, y_train)
+				score_tr, score_te = printAccuracy(clf, X_train, X_test)
+				if score_te > best_score:
+					best_score = score_te
+					best_rf = clone(clf)
                     
-		#acc = printAccuracy(clf, X_train, X_test)
-		#plot_3d.append([n_estimators, max_depth, score_te])                    
-		rf_cv = cross_val_score(clf, X_train, y_train, cv=5)
-		print (max_depth, max_features, rf_cv.mean(), score_te, file=file_rf)
+				#acc = printAccuracy(clf, X_train, X_test)
+				plot_3d.append([n_estimators, max_depth, score_te])                    
+				rf_cv = cross_val_score(clf, X_train, y_train, cv=5)
+				print (max_depth, n_estimators, max_features, min_samples_split, rf_cv.mean(), score_te, file=file_rf)
                 
 dump( best_rf, 'best_rf.pkl')     
 
-"""                
+                
 plot_3d = np.array(plot_3d)
 from mpl_toolkits.mplot3d import Axes3D 
 
@@ -121,8 +129,8 @@ ax.set_zlabel('Test accuracy')
 fig.colorbar(surf, shrink=0.5, aspect=5)
 
 plt.show()
-"""
-file_rf.close()    
+file_rf.close()
+"""    
     
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import StandardScaler
@@ -138,7 +146,6 @@ from sklearn.svm import SVC
 
 best_score = float('-inf')
 
-"""
 file_svm = open("Tuning_svm_acc.csv","w")
 
 #plot_3d = []
@@ -160,7 +167,7 @@ for c in [0.125,0.25, 0.5, 1, 2, 4, 8, 16]:
 
 dump(best_svm, 'best_svm.pkl')            
 
-
+"""
 plot_3d = np.array(plot_3d)
 from mpl_toolkits.mplot3d import Axes3D 
 
@@ -179,8 +186,9 @@ ax.set_zlabel('Test accuracy')
 fig.colorbar(surf, shrink=0.5, aspect=5)
 
 plt.show()
-file_svm.close()
 """
+file_svm.close()
+
 
 from sklearn.ensemble import GradientBoostingClassifier as GBC
 
@@ -188,25 +196,25 @@ best_score = float('-inf')
 
 file_gbc = open("Tuning_gbc_acc.csv","w")
 
-#plot_3d = []
+plot_3d = []
 print("\nTesting GBC")
 for learning_rate in [0.0125, 0.025, 0.05, 0.1, 0.5, 1 ]:
-	for max_depth in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
-		clf = GBC(learning_rate = learning_rate, max_depth = max_depth).fit(X_train_scaled, y_train)
-		print(learning_rate, max_depth, end= ' ')
-		score_tr, score_te = printAccuracy(clf, X_train_scaled, X_test_scaled)
-		if score_te > best_score:
-			best_score = score_te
-			best_gbc = clone(clf)
+	for n_estimators in [10, 25, 50, 100, 200]:
+		for max_depth in [1, 2, 3, 4, 5]:
+			clf = GBC(learning_rate = learning_rate, n_estimators = n_estimators, max_depth = max_depth).fit(X_train_scaled, y_train)
+			print(learning_rate, n_estimators, max_depth, end= ' ')
+			score_tr, score_te = printAccuracy(clf, X_train_scaled, X_test_scaled)
+			if score_te > best_score:
+				best_score = score_te
+				best_gbc = clone(clf)
 
-		#acc = printAccuracy(clf, X_train, X_test)
-		#plot_3d.append([learning_rate, n_estimators, score_te])
-		gbc_cv = cross_val_score(clf, X_train_scaled, y_train, cv=5)
-		print (learning_rate, max_depth, gbc_cv.mean(), score_te, file=file_gbc)
+			#acc = printAccuracy(clf, X_train, X_test)
+			plot_3d.append([learning_rate, n_estimators, score_te])
+			gbc_cv = cross_val_score(clf, X_train_scaled, y_train, cv=5)
+			print (learning_rate, n_estimators, max_depth, gbc_cv.mean(), score_te, file=file_gbc)
 
 dump(best_gbc, 'best_gbc.pkl')                
-
-"""                    
+                    
 plot_3d = np.array(plot_3d)
 from mpl_toolkits.mplot3d import Axes3D 
 
@@ -225,7 +233,6 @@ ax.set_zlabel('Test accuracy')
 fig.colorbar(surf, shrink=0.5, aspect=5)
 
 plt.show()
-"""
 file_gbc.close()                    
 
 for col in data.columns[:14]:

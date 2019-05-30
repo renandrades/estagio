@@ -25,30 +25,6 @@ def printAccuracy(clf, Xtr, Xte):
 	return acc_train, acc_test
 
 
-def plotCorrMap(ini, end):
-	corr = data[data.columns[ini:end+1]].corr()
-	mask = np.zeros_like(corr)
-	mask[np.triu_indices_from(mask)] = True
-
-	ax = sns.heatmap(corr.abs(), annot=True, fmt = '.1f', mask = mask,linewidths=.5)
-	plt.tight_layout()
-	
-	plt.show()
-
-
-def plotCorrWithClass(ini, end, class_name):
-	corr = data[data.columns[ini:end+1]].corrwith(data[class_name])
-	corr.abs().plot(kind='bar')
-	plt.tight_layout()
-	plt.show()
-
-def plotTopCorrWithClass(n, class_name):
-	corr = data.corrwith(data[class_name]).abs().sort_values(ascending = False)
-	corr.loc[:,:n].plot(kind='bar')
-	plt.tight_layout()
-	plt.show()
-
-
 data1 = pd.read_csv('data_arrhythmia.csv', sep = ';', na_values='?')
 data = data1.drop(data1[(data1['height'] > 250)].index) 
 

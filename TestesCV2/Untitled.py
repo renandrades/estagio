@@ -1,8 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[23]:
-
 
 from __future__ import print_function
 
@@ -47,6 +42,13 @@ def plotCorrWithClass(ini, end, class_name):
 	plt.tight_layout()
 	plt.show()
 
+def plotTopCorrWithClass(n, class_name):
+	corr = data.corrwith(data[class_name]).sort_values(ascending = False)
+	corr.abs().plot(kind='bar')
+	plt.tight_layout()
+	plt.show()
+
+
 data1 = pd.read_csv('data_arrhythmia.csv', sep = ';', na_values='?')
 data = data1.drop(data1[(data1['height'] > 250)].index) #retirei os valores invalidos de altura (700m)
 
@@ -81,7 +83,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
 
 best_score = float('-inf')
 
-
+"""
 file_rf = open("Tuning_rf_acc.csv","w")
 
 #plot_3d = []
@@ -102,7 +104,7 @@ for max_depth in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10):
                 
 dump( best_rf, 'best_rf.pkl')     
 
-"""                
+                
 plot_3d = np.array(plot_3d)
 from mpl_toolkits.mplot3d import Axes3D 
 
@@ -121,7 +123,9 @@ ax.set_zlabel('Test accuracy')
 fig.colorbar(surf, shrink=0.5, aspect=5)
 
 plt.show()
-"""
+
+
+
 file_rf.close()    
     
 from sklearn.preprocessing import MinMaxScaler
@@ -138,7 +142,7 @@ from sklearn.svm import SVC
 
 best_score = float('-inf')
 
-"""
+
 file_svm = open("Tuning_svm_acc.csv","w")
 
 #plot_3d = []
@@ -180,7 +184,8 @@ fig.colorbar(surf, shrink=0.5, aspect=5)
 
 plt.show()
 file_svm.close()
-"""
+
+
 
 from sklearn.ensemble import GradientBoostingClassifier as GBC
 
@@ -206,7 +211,7 @@ for learning_rate in [0.0125, 0.025, 0.05, 0.1, 0.5, 1 ]:
 
 dump(best_gbc, 'best_gbc.pkl')                
 
-"""                    
+                    
 plot_3d = np.array(plot_3d)
 from mpl_toolkits.mplot3d import Axes3D 
 
@@ -225,8 +230,9 @@ ax.set_zlabel('Test accuracy')
 fig.colorbar(surf, shrink=0.5, aspect=5)
 
 plt.show()
-"""
+
 file_gbc.close()                    
+"""
 
 for col in data.columns[:14]:
 
@@ -249,20 +255,8 @@ plotCorrWithClass(0,14, 'diagnosis')
 plotCorrMap(15,26)
 plotCorrWithClass(15,26, 'diagnosis')
 
+plotTopCorrWithClass(15, 'diagnosis')
 
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
 
 
 

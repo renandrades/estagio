@@ -1,5 +1,4 @@
 
-
 from __future__ import print_function
 
 from joblib import dump
@@ -15,17 +14,16 @@ import sys
 if not sys.warnoptions:
     import warnings
     warnings.simplefilter("ignore")
-    
-def printSensitivity(clf, Xtr, Xte, ytr, yte):
+
+def printAccuracy(clf, Xtr, Xte):
 	y_hat_test = clf.predict(Xte)
 	y_hat_train = clf.predict(Xtr)
-	cf_tr = confusion_matrix(ytr, y_hat_train)
-	cf_te = confusion_matrix(yte, y_hat_test) 
-	sensitivity_tr = (1.0*cf_tr[1][1])/((cf_tr[1][1]) + (cf_tr[1][0]))
-	sensitivity_te = (1.0*cf_te[1][1])/((cf_te[1][1]) + (cf_te[1][0]))
+	acc_train =accuracy_score(y_train, y_hat_train)
+	acc_test = accuracy_score(y_test,y_hat_test)
 
-	print('%.2f %.2f' % (sensitivity_tr, sensitivity_te))    
-	return sensitivity_tr, sensitivity_te 
+	print('%.2f %.2f' % (acc_train, acc_test))
+	return acc_train, acc_test
+
 
 def plotCorrMap(ini, end):
 	corr = data[data.columns[ini:end+1]].corr()
@@ -34,16 +32,23 @@ def plotCorrMap(ini, end):
 
 	ax = sns.heatmap(corr.abs(), annot=True, fmt = '.1f', mask = mask,linewidths=.5)
 	plt.tight_layout()
-	plt.savefig('teste.pdf')
+	
 	plt.show()
+
 
 def plotCorrWithClass(ini, end, class_name):
 	corr = data[data.columns[ini:end+1]].corrwith(data[class_name])
 	corr.abs().plot(kind='bar')
 	plt.tight_layout()
-	plt.savefig('teste1.pdf')
 	plt.show()
-    
+
+def plotTopCorrWithClass(n, class_name):
+	corr = data.corrwith(data[class_name]).abs().sort_values(ascending = False)
+	corr.loc[:,:n].plot(kind='bar')
+	plt.tight_layout()
+	plt.show()
+
+
 data1 = pd.read_csv('data_arrhythmia.csv', sep = ';', na_values='?')
 data = data1.drop(data1[(data1['height'] > 250)].index) 
 
@@ -66,9 +71,10 @@ data.loc[data.diagnosis  > 1, 'diagnosis'] = 1
 X = data.loc[:, data.columns != 'diagnosis']
 y = data['diagnosis']
 
+
 from sklearn.ensemble import RandomForestClassifier as RF 
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score
 from sklearn.base import clone
 from sklearn.model_selection import cross_val_score
 
@@ -78,14 +84,14 @@ best_score = float('-inf')
 
 
 print("Testing Random Forests")
-
+							
 clf = RF().fit(X_train, y_train)
-score_tr, score_te = printSensitivity(clf, X_train, X_test, y_train, y_test)
+score_tr, score_te = printAccuracy(clf, X_train, X_test)
 if score_te > best_score:
 	best_score = score_te
 	best_rf = clone(clf)
-                    
-
+						    
+   
     
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import StandardScaler
@@ -102,14 +108,17 @@ from sklearn.svm import SVC
 best_score = float('-inf')
 
 
+
 print("\nTesting SVM")
 
 clf = SVC().fit(X_train_scaled, y_train)
-score_tr, score_te = printSensitivity(clf, X_train_scaled, X_test_scaled, y_train, y_test)
+
+score_tr, score_te = printAccuracy(clf, X_train_scaled, X_test_scaled)
 if score_te > best_score:
 	best_score = score_te
 	best_svm = clone(clf)
                     
+			        
 
 
 from sklearn.ensemble import GradientBoostingClassifier as GBC
@@ -120,10 +129,11 @@ best_score = float('-inf')
 print("\nTesting GBC")
 
 clf = GBC().fit(X_train_scaled, y_train)
-
-score_tr, score_te = printSensitivity(clf, X_train_scaled, X_test_scaled, y_train, y_test)
+score_tr, score_te = printAccuracy(clf, X_train_scaled, X_test_scaled)
 if score_te > best_score:
 	best_score = score_te
 	best_gbc = clone(clf)
+
+
 
 

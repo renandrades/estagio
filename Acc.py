@@ -18,8 +18,8 @@ if not sys.warnoptions:
 def printAccuracy(clf, Xtr, Xte):
 	y_hat_test = clf.predict(Xte)
 	y_hat_train = clf.predict(Xtr)
-	acc_train =accuracy_score(y_train, y_hat_train)
-	acc_test = accuracy_score(y_test,y_hat_test)
+	acc_train =recall_score(y_train, y_hat_train)
+	acc_test = recall_score(y_test,y_hat_test)
 
 	print('%.2f %.2f' % (acc_train, acc_test))
 	return acc_train, acc_test
@@ -50,7 +50,7 @@ y = data['diagnosis']
 
 from sklearn.ensemble import RandomForestClassifier as RF 
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, recall_score
 from sklearn.base import clone
 from sklearn.model_selection import cross_val_score
 
@@ -61,12 +61,14 @@ best_score = float('-inf')
 
 print("Testing Random Forests")
 							
+clf_t = RF(bootstrap=True,max_depth=20,max_features=100,min_samples_leaf=2,min_samples_split=20,n_estimators=50).fit(X_train, y_train)
 clf = RF().fit(X_train, y_train)
+
+print('Default')
 score_tr, score_te = printAccuracy(clf, X_train, X_test)
-if score_te > best_score:
-	best_score = score_te
-	best_rf = clone(clf)
-						    
+print('Tuned')
+score_tr, score_te = printAccuracy(clf_t, X_train, X_test)
+				    
    
     
 from sklearn.preprocessing import MinMaxScaler
@@ -88,28 +90,37 @@ best_score = float('-inf')
 print("\nTesting SVM")
 
 clf = SVC().fit(X_train_scaled, y_train)
+clf_t = SVC(C=128,gamma=0.0001 ,shrinking=1,tol=0.001).fit(X_train_scaled, y_train)
 
+print('Default')
 score_tr, score_te = printAccuracy(clf, X_train_scaled, X_test_scaled)
-if score_te > best_score:
-	best_score = score_te
-	best_svm = clone(clf)
+print('Tuned')
+score_tr, score_te = printAccuracy(clf_t, X_train_scaled, X_test_scaled)
                     
 			        
 
 
 from sklearn.ensemble import GradientBoostingClassifier as GBC
 
-best_score = float('-inf')
-
 
 print("\nTesting GBC")
 
+clf_t = GBC(learning_rate=0.01,loss='exponential',max_depth=10,max_features='auto',min_samples_leaf=1,min_samples_split=50,n_estimators=600,subsample=0.5).fit(X_train_scaled, y_train)
 clf = GBC().fit(X_train_scaled, y_train)
+print('Default')
 score_tr, score_te = printAccuracy(clf, X_train_scaled, X_test_scaled)
-if score_te > best_score:
-	best_score = score_te
-	best_gbc = clone(clf)
+print('Tuned')
+score_tr, score_te = printAccuracy(clf_t, X_train_scaled, X_test_scaled)
 
 
 
-
+"""
+#RF sens.
+bootstrap=False ,max_depth=40,max_features=100,min_samples leaf=1,min_samples_split=15,n_estimators=200,
+#SVC acc
+#SVC sens
+C=4,gamma=0.01,k=all ,shrinking=1,tol=0.001,
+#GBC acc
+#GBC sens
+learning rate=0.01,loss='exponential',max_depth=50,max_features=100,min_samples_leaf=1,min_samples_split=15,n_estimators=600,subsample=0.75
+"""
